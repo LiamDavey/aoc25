@@ -22,13 +22,18 @@ fn p2(contents: &String) -> i32 {
     let mut zeros = 0;
     let mut pos = 50;
     for line in contents.lines() {
-        println!("{line}");
         let mut crosses = 0;
         let steps: i32 = line[1..].trim().parse().unwrap();
         match line.chars().nth(0).unwrap() {
             'L' => {
-                crosses = (pos - steps).div_euclid(100).abs();
+                if pos == 0 {
+                    crosses -= 1;
+                }
+                crosses += (pos - steps).div_euclid(100).abs();
                 pos = (pos - steps).rem_euclid(100);
+                if pos == 0 {
+                    crosses += 1;
+                }
             },
             'R' => {
                 crosses = (pos + steps).div_euclid(100).abs();
@@ -37,8 +42,6 @@ fn p2(contents: &String) -> i32 {
             _ => ()
         }
         zeros += crosses;
-        println!("pos={pos}");
-        println!("zeros={zeros}");
     }
     zeros
 }
