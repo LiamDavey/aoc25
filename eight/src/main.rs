@@ -70,26 +70,60 @@ fn p1(points: &[Point], iterations: usize) -> usize {
     lengths[..3].iter().product()
 }
 
-// fn p2(contents: &str) -> usize {
-// }
+fn p2(points: &[Point]) -> isize {
+    let mut options: Vec<(usize, usize, f64)> = vec![];
+    for i in 0..points.len() {
+        for j in (i + 1)..points.len() {
+            let dist = points[i].dist(&points[j]);
+            options.push((i, j, dist));
+        }
+    }
+    options.sort_by(|a, b| a.2.total_cmp(&b.2));
+
+    let mut circuits: Vec<Vec<usize>> = vec![];
+    for i in 0..points.len() {
+        circuits.push(vec![i]);
+    }
+
+    let mut ans = 0;
+    for (idx, other_idx, _dist) in options {
+        let circuit_idx = circuits.iter().position(|c| c.contains(&idx)).unwrap();
+        let other_circuit_idx = circuits.iter().position(|c| c.contains(&other_idx)).unwrap();
+            if circuit_idx != other_circuit_idx {
+                // remove larger index, so keep index doesn't change
+                let (keep, drop) = if circuit_idx < other_circuit_idx { (circuit_idx, other_circuit_idx) } else { (other_circuit_idx, circuit_idx) };
+                let mut new_circuit = circuits.remove(drop);
+                circuits[keep].append(&mut new_circuit);
+            }
+        if circuits.len() == 1 {
+            ans = points[idx].x * points[other_idx].x;
+            break;
+        }
+    }
+    ans
+}
 
 fn main() {
     let file_path = env::args()
         .nth(1)
-        .expect("Usage: eight <file_path> <iterations>");
-    let iterations: usize = env::args()
-        .nth(2)
-        .expect("Usage: eight <file_path> <iterations>")
-        .parse()
-        .expect("Usage: iterations must be uint");
+        .expect("Usage: eight <file_path>");
 
-    let contents = fs::read_to_string(file_path).expect("I can't read that file");
+    let contents = fs::read_to_string(&file_path).expect("I can't read that file");
 
     let points = read_to_points(&contents);
 
-    let p1_ans = p1(&points, iterations);
-    println!("{p1_ans}");
+    if file_path.contains("example.txt") {
+        let p1_ans = p1(&points, 10);
+        println!("{p1_ans}");
+    } 
+    else if file_path.contains("actual.txt") {
+        let p1_ans = p1(&points, 1000);
+        println!("{p1_ans}");
+    }
+    else {
+        println!("Unknown input");
+    }
 
-    // let p2_ans = p2(&contents);
-    // println!("{p2_ans}");
+    let p2_ans = p2(&points);
+    println!("{p2_ans}");
 }
